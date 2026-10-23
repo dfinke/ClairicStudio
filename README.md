@@ -4,6 +4,10 @@
 
 **Turn messy text into typed data—and the code to do it again.**
 
+[![Watch the Clairic Studio demo: turn text into data and export working code](docs/assets/clairic-studio-thumbnail.png)](https://youtu.be/NlVhky9tE6Y)
+
+**[▶ Watch the demo on YouTube](https://youtu.be/NlVhky9tE6Y)**
+
 Paste an invoice. Name the fields you want. Watch the results take shape as you refine the schema. Then copy a working program in **PowerShell, Python, TypeScript, Go, or Rust** and bring the extraction into your own workflow.
 
 Clairic Studio is a desktop workbench for [Cloudflare's Clairic model](https://developers.cloudflare.com/workers-ai/models/clairic/), built with Go and Wails.
