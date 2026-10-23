@@ -35,10 +35,11 @@ type Workspace struct {
 	SchemaPath   string         `json:"schema_path"`
 }
 type Bootstrap struct {
-	Workspace  Workspace  `json:"workspace"`
-	Document   string     `json:"document"`
-	Connection Connection `json:"connection"`
-	Notice     string     `json:"notice"`
+	Workspace     Workspace  `json:"workspace"`
+	Document      string     `json:"document"`
+	Connection    Connection `json:"connection"`
+	Notice        string     `json:"notice"`
+	HasSavedDraft bool       `json:"has_saved_draft"`
 }
 type Document struct {
 	Path string `json:"path"`
@@ -49,23 +50,28 @@ type SchemaFile struct {
 	Schema clairic.Schema `json:"schema"`
 }
 type App struct {
-	ctx          context.Context
-	mu           sync.Mutex
-	workspace    Workspace
-	creds        credentials
-	dir          string
-	client       *clairic.Client
-	active       bool
-	cancel       context.CancelFunc
-	saveTimer    *time.Timer
-	smoke        bool
-	report       string
-	ready        bool
-	startupError string
+	ctx               context.Context
+	mu                sync.Mutex
+	workspace         Workspace
+	creds             credentials
+	dir               string
+	client            *clairic.Client
+	active            bool
+	cancel            context.CancelFunc
+	saveTimer         *time.Timer
+	smoke             bool
+	report            string
+	ready             bool
+	startupError      string
+	savedWorkspace    *Workspace
+	workspaceDirty    bool
+	workspaceStarted  bool
+	environment       environmentLookup
+	storedCredentials func() credentials
 }
 
 func NewApp() *App {
-	return &App{client: clairic.NewClient(), workspace: Workspace{Schema: clairic.Schema{Version: 1, Fields: []clairic.Field{}}, Theme: "dark"}}
+	return &App{client: clairic.NewClient(), workspace: Workspace{Schema: clairic.Schema{Version: 1, Fields: []clairic.Field{}}, Theme: "dark"}, environment: credentialEnvironment, storedCredentials: readStoredCredentials}
 }
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
@@ -82,14 +88,12 @@ func (a *App) startup(ctx context.Context) {
 	}
 	current := filepath.Join(a.dir, "workspace.json")
 	data, err := os.ReadFile(current)
-	migrated := false
 	if os.IsNotExist(err) && !a.smoke {
 		for _, old := range []string{"ClairicSchemaBuddy", "PSClairicSchemaDesigner", filepath.Join("PSAIClairic", "SchemaBuddy")} {
 			legacy := filepath.Join(os.Getenv("LOCALAPPDATA"), old, "workspace.json")
 			if b, e := os.ReadFile(legacy); e == nil {
 				data = b
 				err = nil
-				migrated = true
 				break
 			}
 		}
@@ -102,7 +106,8 @@ func (a *App) startup(ctx context.Context) {
 			raw, _ := json.Marshal(saved.Schema)
 			if s, e := clairic.ReadSchema(raw); e == nil {
 				saved.Schema = s
-				a.workspace = saved
+				a.savedWorkspace = &saved
+				a.workspace.Theme = saved.Theme
 			} else {
 				a.startupError = "Saved schema could not be read. Open a schema or start fresh."
 			}
@@ -114,18 +119,11 @@ func (a *App) startup(ctx context.Context) {
 	if a.workspace.Theme != "light" {
 		a.workspace.Theme = "dark"
 	}
-	account, token := os.Getenv("CLOUDFLARE_ACCOUNT_ID"), os.Getenv("CLOUDFLARE_AUTH_TOKEN")
-	if account != "" || token != "" {
-		a.creds = credentials{account, token, "environment"}
-	} else if !a.smoke {
-		if secret, e := keyring.Get("ClairicStudio", "cloudflare"); e == nil {
-			_ = json.Unmarshal([]byte(secret), &a.creds)
-			a.creds.Source = "credential store"
-		}
+	loadStored := a.storedCredentials
+	if a.smoke {
+		loadStored = nil
 	}
-	if migrated {
-		_ = a.writeWorkspaceLocked()
-	}
+	a.creds = discoverCredentials(a.environment, loadStored)
 	if a.smoke {
 		go func() {
 			time.Sleep(15 * time.Second)
@@ -144,7 +142,9 @@ func (a *App) beforeClose(ctx context.Context) bool {
 	if a.saveTimer != nil {
 		a.saveTimer.Stop()
 	}
-	_ = a.writeWorkspaceLocked()
+	if a.workspaceDirty {
+		_ = a.writeWorkspaceLocked()
+	}
 	if a.cancel != nil {
 		a.cancel()
 	}
@@ -159,7 +159,13 @@ func (a *App) Ready() {
 	}
 }
 func (a *App) finishSmoke(problem string) {
-	data, _ := json.Marshal(map[string]any{"uiReady": problem == "", "error": problem, "application": "Clairic Studio"})
+	a.mu.Lock()
+	data, _ := json.Marshal(map[string]any{
+		"uiReady": problem == "", "error": problem, "application": "Clairic Studio",
+		"initialFields": len(a.workspace.Schema.Fields), "credentialsConfigured": a.connectionLocked().Configured,
+		"credentialSource": a.creds.Source,
+	})
+	a.mu.Unlock()
 	if a.report != "" {
 		_ = os.WriteFile(a.report, data, 0600)
 	}
@@ -168,18 +174,52 @@ func (a *App) finishSmoke(problem string) {
 func (a *App) Bootstrap() Bootstrap {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	b := Bootstrap{Workspace: a.workspace, Connection: a.connectionLocked(), Notice: a.startupError}
+	b := Bootstrap{Workspace: a.workspace, Connection: a.connectionLocked(), Notice: a.startupError, HasSavedDraft: a.savedWorkspace != nil && len(a.savedWorkspace.Schema.Fields) > 0}
 	if a.workspace.DocumentPath != "" {
 		if text, err := readText(a.workspace.DocumentPath); err == nil {
 			b.Document = text
 		} else {
-			b.Notice = "Workspace restored; the previous document is unavailable. Paste text or open it again."
+			b.Notice = "The saved document is unavailable. Paste text or open it again."
 		}
 	}
 	if b.Notice == "" {
-		b.Notice = "Workspace restored without making a model request."
+		b.Notice = "Ready. Paste a document or open a file, then add fields."
+		if b.HasSavedDraft && !a.workspaceStarted {
+			b.Notice = "Ready. Start fresh, open a schema, or choose Restore draft."
+		}
 	}
 	return b
+}
+
+func (a *App) RestoreWorkspace() (Bootstrap, error) {
+	a.mu.Lock()
+	if a.active {
+		a.mu.Unlock()
+		return Bootstrap{}, errors.New("Wait for the current extraction before restoring a draft")
+	}
+	if a.savedWorkspace == nil {
+		a.mu.Unlock()
+		return Bootstrap{}, errors.New("No saved draft is available")
+	}
+	theme := a.workspace.Theme
+	a.workspace = *a.savedWorkspace
+	a.workspace.Theme = theme
+	a.workspace.Theme = strings.ToLower(a.workspace.Theme)
+	if a.workspace.Theme != "light" {
+		a.workspace.Theme = "dark"
+	}
+	a.workspaceStarted = true
+	a.workspaceDirty = true
+	err := a.writeWorkspaceLocked()
+	a.mu.Unlock()
+	if err != nil {
+		return Bootstrap{}, errors.New("Could not save the restored draft")
+	}
+	b := a.Bootstrap()
+	if b.Notice == "Ready. Paste a document or open a file, then add fields." {
+		b.Notice = "Draft restored. Choose Extract now when you are ready."
+	}
+	return b, nil
 }
 func (a *App) connectionLocked() Connection {
 	ok := clairic.AccountPattern.MatchString(a.creds.Account) && strings.TrimSpace(a.creds.Token) != ""
@@ -217,7 +257,7 @@ func (a *App) ForgetConnection() (Connection, error) {
 	if err := keyring.Delete("ClairicStudio", "cloudflare"); err != nil && err != keyring.ErrNotFound {
 		return a.connectionLocked(), errors.New("Could not remove saved credentials from the OS store")
 	}
-	a.creds = credentials{os.Getenv("CLOUDFLARE_ACCOUNT_ID"), os.Getenv("CLOUDFLARE_AUTH_TOKEN"), "environment"}
+	a.creds = discoverCredentials(a.environment, nil)
 	return a.connectionLocked(), nil
 }
 func (a *App) TestConnection() (string, error) {
@@ -344,6 +384,10 @@ func (a *App) UpdateWorkspace(w Workspace) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	a.workspace = w
+	a.workspaceDirty = true
+	if len(w.Schema.Fields) > 0 || w.DocumentPath != "" || w.SchemaPath != "" {
+		a.workspaceStarted = true
+	}
 	if a.saveTimer != nil {
 		a.saveTimer.Stop()
 	}
@@ -357,7 +401,13 @@ func (a *App) UpdateWorkspace(w Workspace) error {
 	return nil
 }
 func (a *App) writeWorkspaceLocked() error {
-	data, err := json.MarshalIndent(a.workspace, "", "  ")
+	w := a.workspace
+	if !a.workspaceStarted && a.savedWorkspace != nil {
+		// Appearance changes on the blank launch screen must not erase a saved draft.
+		w = *a.savedWorkspace
+		w.Theme = a.workspace.Theme
+	}
+	data, err := json.MarshalIndent(w, "", "  ")
 	if err != nil {
 		return err
 	}

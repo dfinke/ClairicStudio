@@ -42,6 +42,10 @@ export function Ready() {
   return window['go']['main']['App']['Ready']();
 }
 
+export function RestoreWorkspace() {
+  return window['go']['main']['App']['RestoreWorkspace']();
+}
+
 export function SaveCode(arg1, arg2, arg3, arg4, arg5) {
   return window['go']['main']['App']['SaveCode'](arg1, arg2, arg3, arg4, arg5);
 }

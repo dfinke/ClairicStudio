@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Launch now starts with an empty document and fields. Saved drafts and earlier designer workspaces are recovered only with Restore draft; unopened drafts stay intact.
+- Credential discovery checks the launch environment, Windows user/system variables, the API-token alias, and saved credentials. Partial environment settings no longer hide a saved connection.
+- Setup explains PowerShell-session credentials and how Remember enables future double-click launches without retyping a detected token.
+
 - The ready-to-run Windows x64 executable is included in the repository with a README download link.
 
 - Copy code and Copy JSON briefly confirm successful clipboard writes with ✓ Copied; content changes reset the confirmation.

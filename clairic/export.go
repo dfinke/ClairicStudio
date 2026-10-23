@@ -62,7 +62,7 @@ request = json.loads(base64.b64decode("` + encoded + `"))
     raise SystemExit("Usage: python extract.py document.txt")
 request["state"] = open(sys.argv[1], encoding="utf-8-sig").read()
 `) + `account = os.environ["CLOUDFLARE_ACCOUNT_ID"]
-token = os.environ["CLOUDFLARE_AUTH_TOKEN"]
+token = os.environ.get("CLOUDFLARE_AUTH_TOKEN", "").strip() or os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
 url = f"https://api.cloudflare.com/client/v4/accounts/{account}/ai/run/@cf/cloudflare/clairic"
 req = urllib.request.Request(url, json.dumps(request, ensure_ascii=False).encode("utf-8"),
     {"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
@@ -82,6 +82,9 @@ if ($Path) {
 }
 $account = $env:CLOUDFLARE_ACCOUNT_ID
 $token = $env:CLOUDFLARE_AUTH_TOKEN
+if ([string]::IsNullOrWhiteSpace($token)) {
+    $token = $env:CLOUDFLARE_API_TOKEN
+}
 if (-not $account -or -not $token) {
     throw 'Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AUTH_TOKEN.'
 }
@@ -109,7 +112,7 @@ const request = JSON.parse(Buffer.from('` + encoded + `', 'base64').toString('ut
 }
 request.state = readFileSync(process.argv[2], 'utf8').replace(/^\uFEFF/, '');
 `) + `const account = process.env.CLOUDFLARE_ACCOUNT_ID;
-const token = process.env.CLOUDFLARE_AUTH_TOKEN;
+const token = process.env.CLOUDFLARE_AUTH_TOKEN?.trim() || process.env.CLOUDFLARE_API_TOKEN?.trim();
 if (!account || !token) {
   throw new Error('Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AUTH_TOKEN');
 }
@@ -148,6 +151,9 @@ func main() {
   request["state"] = strings.TrimPrefix(string(text), "\ufeff")
  }
  account, token := os.Getenv("CLOUDFLARE_ACCOUNT_ID"), os.Getenv("CLOUDFLARE_AUTH_TOKEN")
+ if strings.TrimSpace(token) == "" {
+  token = os.Getenv("CLOUDFLARE_API_TOKEN")
+ }
  if account == "" || token == "" {
   panic("Set CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_AUTH_TOKEN")
  }
@@ -210,7 +216,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
      request["state"] = std::fs::read_to_string(path)?.trim_start_matches('\u{feff}').into();
  }
  let account = std::env::var("CLOUDFLARE_ACCOUNT_ID")?;
- let token = std::env::var("CLOUDFLARE_AUTH_TOKEN")?;
+ let token = std::env::var("CLOUDFLARE_AUTH_TOKEN").ok()
+  .filter(|value| !value.trim().is_empty())
+  .or_else(|| std::env::var("CLOUDFLARE_API_TOKEN").ok())
+  .ok_or("Set CLOUDFLARE_AUTH_TOKEN or CLOUDFLARE_API_TOKEN")?;
  let response = reqwest::blocking::Client::builder().timeout(std::time::Duration::from_secs(120)).build()?
   .post(format!("https://api.cloudflare.com/client/v4/accounts/{account}/ai/run/@cf/cloudflare/clairic"))
   .bearer_auth(token).json(&request).send()?.error_for_status()?;

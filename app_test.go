@@ -38,7 +38,7 @@ func TestEnvironmentConnectionIsDetectedButTokenIsNotReturned(t *testing.T) {
 	a.dir = t.TempDir()
 	a.startup(context.Background())
 	bootstrap := a.Bootstrap()
-	if !bootstrap.Connection.Configured || bootstrap.Connection.Source != "environment" {
+	if !bootstrap.Connection.Configured || bootstrap.Connection.Source != "environment (process)" {
 		t.Fatal("environment not detected")
 	}
 	data, _ := json.Marshal(bootstrap)
@@ -46,7 +46,7 @@ func TestEnvironmentConnectionIsDetectedButTokenIsNotReturned(t *testing.T) {
 		t.Fatal("token exposed to UI")
 	}
 }
-func TestOldWorkspaceLoadsWithoutExtraction(t *testing.T) {
+func TestOldWorkspaceRequiresExplicitRestore(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("LOCALAPPDATA", dir)
 	t.Setenv("CLOUDFLARE_ACCOUNT_ID", strings.Repeat("c", 32))
@@ -58,15 +58,22 @@ func TestOldWorkspaceLoadsWithoutExtraction(t *testing.T) {
 	a := NewApp()
 	a.dir = filepath.Join(dir, "ClairicStudio")
 	a.startup(context.Background())
-	if len(a.workspace.Schema.Fields) != 1 || a.active {
-		t.Fatal("workspace not restored safely")
+	if len(a.workspace.Schema.Fields) != 0 || a.active || !a.Bootstrap().HasSavedDraft {
+		t.Fatal("launch should stay empty and offer draft recovery")
 	}
 	after, _ := os.ReadFile(old)
 	if string(after) != string(data) {
 		t.Fatal("legacy workspace was changed")
 	}
+	if _, e := os.Stat(filepath.Join(a.dir, "workspace.json")); !os.IsNotExist(e) {
+		t.Fatal("legacy draft was migrated without explicit action")
+	}
+	restored, err := a.RestoreWorkspace()
+	if err != nil || len(restored.Workspace.Schema.Fields) != 1 || a.active {
+		t.Fatalf("explicit restoration failed: %v", err)
+	}
 	if _, e := os.Stat(filepath.Join(a.dir, "workspace.json")); e != nil {
-		t.Fatal("migration not saved")
+		t.Fatal("explicitly restored draft was not saved")
 	}
 }
 func TestAtomicWritePreservesPreviousOnFailure(t *testing.T) {

@@ -21,7 +21,7 @@ Clairic Studio is a desktop workbench for [Cloudflare's Clairic model](https://d
 - **Iterate while you type.** Auto-preview waits for a one-second pause after an edit. **Extract now** also works with Auto-preview on or off.
 - **Inspect the source.** Click a text result to highlight its verified source span. Computed values and predictions may have no direct span.
 - **Keep the full answer.** Explore confidence, nulls, ranges, forecasts, and other model metadata alongside the values.
-- **Make it your workspace.** Resize the document, field editor, and results panes. Switch between light and dark appearances. Pick up your schema where you left off.
+- **Make it your workspace.** Resize the document, field editor, and results panes. Switch between light and dark appearances. Start with an empty document and fields; restore a saved draft explicitly when you want it.
 - **Leave with code.** Preview, copy, or save standalone programs that call Cloudflare directly, or PowerShell programs using PSAIClairic.
 
 ## Run Studio
@@ -30,7 +30,7 @@ Clairic Studio is a desktop workbench for [Cloudflare's Clairic model](https://d
 
 The repository includes the Windows executable alongside its source. Because this repository is private, downloading requires GitHub access. Temporary build outputs stay excluded from Git. No GitHub Release is currently provided; a release can carry a separately uploaded copy of the EXE as an asset.
 
-1. Connect with your **Cloudflare account ID** and an API token with **Workers AI Read** permission for that account. Studio also discovers `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_AUTH_TOKEN` from its launch environment.
+1. Connect with your **Cloudflare account ID** and an API token with **Workers AI Read** permission for that account. Studio checks `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_AUTH_TOKEN` (or the `CLOUDFLARE_API_TOKEN` alias) in its launch environment, Windows user/system environment settings, and its saved credential-store connection. The setup screen appears only when no complete connection is found.
 2. Choose **Load example**, paste text, or choose **Open text file**.
 3. Add fields and describe what each should contain. Choose **Extract now**, or edit with Auto-preview enabled.
 4. Inspect the values, confidence, and source spans. **Copy JSON** copies just the current extracted values.
@@ -38,7 +38,17 @@ The repository includes the Windows executable alongside its source. Because thi
 
 Schema editing and code export work without a connection. Extraction requires internet access. Model requests send your text and schema to Cloudflare and use your Workers AI allowance. **Test extraction** sends one small request.
 
-**Remember** stores credentials in the operating system credential store. Leaving it unchecked keeps entered credentials for the current session. Environment variables take priority on launch; restart Studio after changing them. Tokens are never included in workspace JSON, schema files, or generated programs. **Forget saved credentials** removes the stored connection without changing environment variables.
+**Remember** stores credentials in the operating system credential store. Leaving it unchecked keeps entered credentials for the current session. Complete environment credentials take priority on launch: process/session, Windows user, then Windows system settings. Incomplete settings do not hide a complete saved connection. Restart Studio after changing settings. Tokens are never included in workspace JSON, schema files, or generated programs. **Forget saved credentials** removes the stored connection without changing environment variables.
+
+### Credentials set in a PowerShell profile or session
+
+Windows does not share one PowerShell process's environment with an EXE launched by double-clicking. If your profile sets the variables, open the PowerShell session where they work, then launch Studio from that session:
+
+```powershell
+& 'C:\path\to\ClairicStudio.exe'
+```
+
+Studio detects the inherited connection. To make future double-click launches work, open **Cloudflare connected**, check **Remember**, and choose **Use credentials**. Leave the token blank to reuse the detected token. Alternatively, set the variables in Windows user/system Environment Variables. Studio does not execute PowerShell profiles or silently persist credentials.
 
 ## Your first demo: invoice to automation
 
@@ -87,11 +97,11 @@ Cloudflare credentials saved by Studio are not automatically available to export
 
 ## Schemas and workspace recovery
 
-Fields, appearance, and opened file paths save automatically to `%LOCALAPPDATA%/ClairicStudio/workspace.json`. Pasted or edited document contents and results stay in memory and are not restored. Editing an opened document does not overwrite the original file.
+Every launch starts with an **empty document and no fields**. Appearance is remembered. Fields, appearance, and opened file paths save automatically to `%LOCALAPPDATA%/ClairicStudio/workspace.json`. Pasted or edited document contents and results stay in memory and are not restored. Editing an opened document does not overwrite the original file.
 
-Restoring a workspace makes no model request. Choose **Extract now** to run a restored document without changing Auto-preview. **New schema** keeps the document and provides Undo until your next edit.
+Choose **Restore draft** (also available from File) to recover the last saved workspace, including an earlier PowerShell designer draft. Recovery is explicit and makes no model request. Choose **Extract now** when ready. Simply opening and closing the empty app leaves the saved draft intact. **New schema** keeps the document and provides Undo until your next edit.
 
-Use **Save schema as** for a portable version 1 JSON schema compatible with the PowerShell ClairicSchemaBuddy format. Draft autosaves are separate from explicitly saved schema files. Studio can migrate earlier PowerShell designer workspaces while leaving the original files in place.
+Use **Save schema as** for a portable version 1 JSON schema compatible with the PowerShell ClairicSchemaBuddy format. Draft autosaves are separate from explicitly saved schema files. Explicit draft recovery can migrate earlier PowerShell designer workspaces while leaving the original files in place.
 
 ```json
 {

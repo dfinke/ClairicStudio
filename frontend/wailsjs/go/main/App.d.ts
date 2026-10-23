@@ -23,6 +23,8 @@ export function OpenSchema():Promise<main.SchemaFile>;
 
 export function Ready():Promise<void>;
 
+export function RestoreWorkspace():Promise<main.Bootstrap>;
+
 export function SaveCode(arg1:string,arg2:string,arg3:clairic.Schema,arg4:boolean,arg5:string):Promise<string>;
 
 export function SaveSchema(arg1:clairic.Schema):Promise<string>;

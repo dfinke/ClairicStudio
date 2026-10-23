@@ -38,6 +38,8 @@ func powerShellModuleProgram(request Request, schema Schema, embed bool) CodeExp
 	code.WriteString(conditional(embed, "param([string]$Path)\n\n", "param([Parameter(Mandatory)][string]$Path)\n\n"))
 	code.WriteString("$ErrorActionPreference = 'Stop'\n")
 	code.WriteString("Import-Module PSAIClairic -MinimumVersion 0.2.0 -ErrorAction Stop\n\n")
+	code.WriteString("$apiToken = $env:CLOUDFLARE_AUTH_TOKEN\n")
+	code.WriteString("if ([string]::IsNullOrWhiteSpace($apiToken)) {\n    $apiToken = $env:CLOUDFLARE_API_TOKEN\n}\n\n")
 	if embed {
 		fmt.Fprintf(&code, "$state = %s\n", powerShellLiteral(request.State))
 		code.WriteString("if ($Path) {\n    $state = Get-Content -LiteralPath $Path -Raw -Encoding utf8\n}\n")
@@ -66,7 +68,7 @@ func powerShellModuleProgram(request Request, schema Schema, embed bool) CodeExp
 		code.WriteString("\n")
 	}
 	code.WriteString("}\n\n")
-	code.WriteString("$result = Invoke-Clairic -State $state -Fields $fields -ReturnStateText -TimeoutSec 120")
+	code.WriteString("$result = Invoke-Clairic -State $state -Fields $fields -ReturnStateText -TimeoutSec 120 -ApiToken $apiToken")
 	if request.ReferenceDate != "" {
 		fmt.Fprintf(&code, " -ReferenceDate %s", powerShellLiteral(request.ReferenceDate))
 	}

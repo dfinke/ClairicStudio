@@ -154,6 +154,7 @@ export namespace main {
 	    document: string;
 	    connection: Connection;
 	    notice: string;
+	    has_saved_draft: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Bootstrap(source);
@@ -165,6 +166,7 @@ export namespace main {
 	        this.document = source["document"];
 	        this.connection = this.convertValues(source["connection"], Connection);
 	        this.notice = source["notice"];
+	        this.has_saved_draft = source["has_saved_draft"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

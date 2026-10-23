@@ -45,6 +45,7 @@ func main() {
 	}
 	file.AddText("New schema", nil, emit("new"))
 	file.AddText("Open schema…", nil, emit("open-schema"))
+	file.AddText("Restore saved draft", nil, emit("restore-draft"))
 	file.AddText("Save schema as…", nil, emit("save-schema"))
 	file.AddSeparator()
 	file.AddText("Open text file…", nil, emit("open-document"))

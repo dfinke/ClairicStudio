@@ -15,7 +15,7 @@ if(!api&&previewMode)api=(await import('./preview')).previewAPI();
 document.querySelector('#app')!.innerHTML=`
 <header class="app-header"><div class="brand"><svg aria-hidden="true" viewBox="0 0 40 40"><path d="M8 5h17l7 7v23H8z"/><path d="M24 5v9h8M14 21h12M14 27h7"/><circle cx="29" cy="29" r="7"/></svg><div><h1>Clairic <span>Studio</span></h1><p>From documents to working code.</p></div></div>
 <div class="header-actions"><button id="connection" class="connection"><span class="dot"></span><span id="connection-label">Connect Cloudflare</span></button><button id="theme" class="icon-button" aria-label="Toggle light and dark appearance" title="Toggle appearance">☀</button><button id="export" class="primary" title="Preview and save a program">Export code <span aria-hidden="true">↗</span></button></div></header>
-<nav class="toolbar" aria-label="Workspace actions"><div><button id="new" title="New schema (Ctrl+N)">New schema</button><button id="open-schema" title="Open schema (Ctrl+O)">Open schema…</button><button id="save-schema">Save schema as…</button><button id="undo" disabled>Undo new schema</button></div><div><span id="workspace-note">Changes save automatically</span><button id="example" class="subtle">Load example</button></div></nav>
+<nav class="toolbar" aria-label="Workspace actions"><div><button id="new" title="New schema (Ctrl+N)">New schema</button><button id="open-schema" title="Open schema (Ctrl+O)">Open schema…</button><button id="save-schema">Save schema as…</button><button id="undo" disabled>Undo new schema</button><button id="restore-draft" hidden>Restore draft</button></div><div><span id="workspace-note">Changes save automatically</span><button id="example" class="subtle">Load example</button></div></nav>
 <div id="preview-notice" class="preview-notice" hidden>UI preview · synthetic data · no model requests</div>
 <main id="workbench"><div id="top-panes">
 <section class="panel document-panel" aria-labelledby="document-heading"><div class="panel-heading"><div><span class="eyebrow">01 / SOURCE</span><h2 id="document-heading">Document</h2></div><button id="open-document">Open text file…</button></div><div id="document-path" class="path">Paste text below, or open a UTF-8 document.</div><textarea id="document" spellcheck="false" placeholder="Paste an invoice, customer message, or other document…" aria-label="Source document"></textarea><div class="panel-footer"><span id="document-count">0 characters</span><span id="source-note">Click a text result to inspect its source.</span></div></section>
@@ -24,7 +24,7 @@ document.querySelector('#app')!.innerHTML=`
 </div><div id="row-splitter" class="splitter horizontal" role="separator" aria-orientation="horizontal" tabindex="0" aria-label="Resize upper panes and results"></div>
 <section class="panel results-panel" aria-labelledby="results-heading"><div class="panel-heading"><div><span class="eyebrow">03 / EXTRACTION</span><h2 id="results-heading">Results <span id="results-current" class="small-tag">No extraction yet</span></h2></div><div class="result-actions"><label class="toggle"><input id="auto" type="checkbox" checked><span>Auto-preview</span></label><button id="extract" class="primary" title="Run extraction now, with Auto-preview on or off" disabled>Extract now</button><button id="cancel" hidden>Cancel</button><button id="copy-json" disabled>Copy JSON</button></div></div><div class="table-wrap"><table><thead><tr><th>Field</th><th>Type</th><th>Value</th><th>Confidence</th><th>p10 … p90</th><th>Status</th></tr></thead><tbody id="results-body"></tbody></table><div id="results-empty" class="empty-results"><strong>Your extracted values will appear here.</strong><span>Define fields and connect Cloudflare to run a preview.</span></div></div><details id="answer-details"><summary>Selected answer metadata</summary><pre id="metadata">Select a result to inspect confidence, source spans, and prediction statistics.</pre></details></section></main>
 <footer id="status" data-state="ready" role="status" aria-live="polite"><span id="status-badge">READY</span><div class="status-center"><span id="status-message">Paste a document and add a field to get started.</span><div id="activity" hidden><i></i></div></div><span id="usage"></span></footer>
-<dialog id="connection-dialog"><form id="connection-form"><div class="dialog-heading"><div><span class="eyebrow">CLOUDFLARE WORKERS AI</span><h2>Connect to Cloudflare</h2></div><button type="button" class="icon-button close-dialog" aria-label="Close connection setup">×</button></div><p class="dialog-intro">Use your own account and Workers AI API token. Schema editing and code export work without a connection.</p><label>Account ID<input id="account" autocomplete="off" spellcheck="false" placeholder="32-character account ID"></label><label>API token<input id="token" type="password" autocomplete="off" placeholder="Paste your API token"></label><label class="check"><input id="remember" type="checkbox">Remember in this computer’s credential store</label><p id="connection-state" class="help"></p><p class="help">Environment variables: <code>CLOUDFLARE_ACCOUNT_ID</code> and <code>CLOUDFLARE_AUTH_TOKEN</code>. Tokens are never included in schemas or exported code.</p><div class="connection-links"><button id="setup-help" type="button" class="subtle">Setup instructions</button><button id="forget" type="button" class="subtle">Forget saved credentials</button></div><div id="setup-instructions" class="help-box" hidden>In Cloudflare, copy your account ID and create an API token with Workers AI Read permission for that account. You can also set the two environment variables before launching Studio. Restart after changing environment variables.</div><p id="connection-error" class="dialog-error" role="alert"></p><div class="dialog-footer"><button id="test-connection" type="button" title="Sends one small live model request">Test extraction</button><span class="help">Test sends a small live request.</span><button type="submit" class="primary">Use credentials</button></div></form></dialog>
+<dialog id="connection-dialog"><form id="connection-form"><div class="dialog-heading"><div><span class="eyebrow">CLOUDFLARE WORKERS AI</span><h2>Connect to Cloudflare</h2></div><button type="button" class="icon-button close-dialog" aria-label="Close connection setup">×</button></div><p class="dialog-intro">Use your own account and Workers AI API token. Schema editing and code export work without a connection.</p><label>Account ID<input id="account" autocomplete="off" spellcheck="false" placeholder="32-character account ID"></label><label>API token<input id="token" type="password" autocomplete="off" placeholder="Paste your API token"></label><label class="check"><input id="remember" type="checkbox">Remember in this computer’s credential store</label><p id="connection-state" class="help"></p><p class="help">Environment variables: <code>CLOUDFLARE_ACCOUNT_ID</code> and <code>CLOUDFLARE_AUTH_TOKEN</code> (or <code>CLOUDFLARE_API_TOKEN</code>). Studio checks its launch environment, Windows user/system settings, and its saved connection. Tokens are never included in schemas or exported code.</p><div class="connection-links"><button id="setup-help" type="button" class="subtle">Setup instructions</button><button id="forget" type="button" class="subtle">Forget saved credentials</button></div><div id="setup-instructions" class="help-box" hidden>In Cloudflare, copy your account ID and create an API token with Workers AI Read permission for that account. Set the variables in Windows user/system Environment Variables to make them available when double-clicking the EXE, or enter them here and choose Remember. Variables set only in a PowerShell profile/session are visible when you launch Studio from that session. Launch it there once, then choose Remember and Use credentials without retyping the detected token. Future double-click launches can use the saved connection. Restart Studio after changing settings.</div><p id="connection-error" class="dialog-error" role="alert"></p><div class="dialog-footer"><button id="test-connection" type="button" title="Sends one small live model request">Test extraction</button><span class="help">Test sends a small live request.</span><button type="submit" class="primary">Use credentials</button></div></form></dialog>
 <dialog id="export-dialog"><div class="dialog-heading"><div><span class="eyebrow">TAKE IT INTO YOUR WORKFLOW</span><h2>Export a working program</h2></div><button class="icon-button close-dialog" aria-label="Close code export">×</button></div><div class="export-controls"><div class="export-language"><label>Language<select id="language"><option>PowerShell</option><option>Python</option><option>TypeScript</option><option>Go</option><option>Rust</option></select></label><label id="powershell-style-control">Export style<select id="powershell-style"><option value="standalone">Standalone HTTP script</option><option value="module">Use PSAIClairic module</option></select></label></div><fieldset><legend>Document input</legend><label class="check"><input type="radio" name="input-mode" value="file" checked>Read from a file when the program runs</label><label class="check"><input type="radio" name="input-mode" value="embed">Embed the current document</label></fieldset></div><p id="powershell-hint" class="help-box">The PSAIClairic style uses reusable fields and PowerShell pipelines, including Excel workflows. Requires PSAIClairic 0.2.0+.</p><p id="export-note" class="help"></p><textarea id="code" readonly spellcheck="false" aria-label="Generated program"></textarea><p id="export-error" class="dialog-error" role="alert"></p><div class="dialog-footer"><span class="help">Uses your environment credentials. No Studio installation needed to run the exported code.</span><button id="copy-code">Copy code</button><button id="save-code" class="primary">Save program…</button></div></dialog>
 `;
 
@@ -33,7 +33,7 @@ let connection:Connection={account:'',configured:false,source:'',message:''};
 let revision=0,lastRevision=-1,result:Result|null=null,busy=false,queued=false,cancelled=false;
 let previewTimer:ReturnType<typeof setTimeout>|undefined,exportRevision=0;
 let undoSnapshot:{schema:Schema;path:string;selected:number}|null=null;
-let saveChain=Promise.resolve(),booting=true;
+let saveChain=Promise.resolve(),booting=true,hasSavedDraft=false;
 const doc=$<HTMLTextAreaElement>('document'),auto=$<HTMLInputElement>('auto');
 const copyCodeFeedback=createCopyFeedback($('copy-code'));
 const copyJSONFeedback=createCopyFeedback($('copy-json'));
@@ -54,6 +54,8 @@ function availability(){
  $<HTMLButtonElement>('undo').disabled=!undoSnapshot;
  $<HTMLButtonElement>('duplicate').disabled=selected<0;$<HTMLButtonElement>('delete').disabled=selected<0;
  $<HTMLButtonElement>('move-up').disabled=selected<=0;$<HTMLButtonElement>('move-down').disabled=selected<0||selected>=schema.fields.length-1;
+ $('restore-draft').hidden=!hasSavedDraft;
+ $<HTMLButtonElement>('restore-draft').disabled=busy;
  $('cancel').hidden=!busy;
  $('results-current').textContent=!result?'No extraction yet':lastRevision===revision?'Current':'Previous results · out of date';
  $('results-current').classList.toggle('stale',!!result&&lastRevision!==revision);
@@ -88,10 +90,32 @@ async function extract(){if(busy){queued=true;return;}if(currentError()||!connec
  finally{busy=false;availability();if(!cancelled&&auto.checked&&(queued||revision!==rev))schedulePreview();}
 }
 async function guard(action:()=>Promise<any>|any){try{await action();}catch(e){setStatus(busy?'busy':'error',message(e));}}
+async function restoreDraft() {
+    if (busy) {
+        setStatus('warning', 'Wait for extraction to finish before restoring a draft.');
+        return;
+    }
+    const restored = await api.RestoreWorkspace();
+    clearTimeout(previewTimer);
+    schema = restored.workspace.schema;
+    selected = schema.fields.length ? 0 : -1;
+    documentPath = restored.workspace.document_path || '';
+    schemaPath = restored.workspace.schema_path || '';
+    doc.value = restored.document || '';
+    hasSavedDraft = false;
+    revision++;
+    lastRevision = -1;
+    result = null;
+    undoSnapshot = null;
+    clearHighlight();
+    renderFields();
+    renderResults();
+    setStatus('ready', restored.notice || 'Draft restored. Choose Extract now when ready.');
+}
 async function openSchema(){const file=await api.OpenSchema();if(!file.path)return;schema=file.schema;schemaPath=file.path;selected=schema.fields.length?0:-1;edited();renderFields();}
 async function openDocument(){const file=await api.OpenDocument();if(!file.path)return;doc.value=file.text;documentPath=file.path;edited();}
 async function saveSchema(){const path=await api.SaveSchema(schema);if(path){schemaPath=path;saveWorkspace();setStatus(busy?'busy':result&&lastRevision===revision?'success':'ready','Schema saved. Draft edits continue to save separately.');}}
-function openConnection(){const dialog=$<HTMLDialogElement>('connection-dialog');$<HTMLInputElement>('account').value=connection.account;$<HTMLInputElement>('token').value='';$('connection-state').textContent=connection.message;$('connection-error').textContent='';dialog.showModal();}
+function openConnection(){const dialog=$<HTMLDialogElement>('connection-dialog');$<HTMLInputElement>('account').value=connection.account;$<HTMLInputElement>('token').value='';$<HTMLInputElement>('token').placeholder=connection.configured?'Leave blank to keep the detected token':'Paste your API token';$('connection-state').textContent=connection.message;$('connection-error').textContent='';dialog.showModal();}
 async function configure(remember:boolean){connection=await api.ConfigureConnection($<HTMLInputElement>('account').value,$<HTMLInputElement>('token').value,remember);availability();$('connection-state').textContent=connection.message;}
 function embedded(){return !!document.querySelector<HTMLInputElement>('input[name=input-mode]:checked')?.value.includes('embed');}
 function exportStyle() {
@@ -125,7 +149,7 @@ async function updateCode() {
     }
 }
 function openExport(){if(currentError(false))return;$<HTMLDialogElement>('export-dialog').showModal();void updateCode();}
-const actions:Record<string,()=>any>={new:newSchema,undo:undoNew,'open-schema':openSchema,'save-schema':saveSchema,'open-document':openDocument,'add-field':addField,export:openExport,connect:openConnection,theme:()=>{setTheme(theme==='dark'?'light':'dark');saveWorkspace();}};
+const actions:Record<string,()=>any>={new:newSchema,undo:undoNew,'restore-draft':restoreDraft,'open-schema':openSchema,'save-schema':saveSchema,'open-document':openDocument,'add-field':addField,export:openExport,connect:openConnection,theme:()=>{setTheme(theme==='dark'?'light':'dark');saveWorkspace();}};
 for(const [id,action] of Object.entries(actions))$(id==='connect'?'connection':id).onclick=()=>void guard(action);
 $('example').onclick=()=>{doc.value=sampleDocument;documentPath='';schema=sampleSchema();schemaPath='';selected=0;edited();renderFields();setStatus('ready','Fictional invoice loaded. Inspect the fields, then preview or export.');};
 doc.oninput=()=>{documentPath='';edited();};
@@ -177,7 +201,7 @@ function splitter(id:string,vertical:boolean){const node=$(id);let value=vertica
 splitter('column-splitter',true);splitter('row-splitter',false);
 async function start(){
  if(!api){setStatus('error','The desktop connection is unavailable. Start ClairicStudio.exe, or use the documented developer preview.');return;}
- try{const initial=await api.Bootstrap();schema=initial.workspace.schema;selected=schema.fields.length?0:-1;documentPath=initial.workspace.document_path||'';schemaPath=initial.workspace.schema_path||'';doc.value=initial.document||'';connection=initial.connection;setTheme(initial.workspace.theme);renderFields();renderResults();setStatus('ready',initial.notice||'Ready.');booting=false;if(previewMode)$('preview-notice').hidden=false;
+ try{const initial=await api.Bootstrap();schema=initial.workspace.schema;selected=schema.fields.length?0:-1;documentPath=initial.workspace.document_path||'';schemaPath=initial.workspace.schema_path||'';doc.value=initial.document||'';connection=initial.connection;hasSavedDraft=!!initial.has_saved_draft;setTheme(initial.workspace.theme);renderFields();renderResults();setStatus('ready',initial.notice||'Ready.');booting=false;if(previewMode)$('preview-notice').hidden=false;
   if(window.runtime){EventsOn('studio:action',(action:string)=>{if(actions[action])void guard(actions[action]);});EventsOn('studio:save-error',(text:string)=>{setStatus(busy?'busy':'warning',text);});}
   await api.Ready();if(!connection.configured&&!previewMode)openConnection();
  }catch(e){setStatus('error',message(e));}
