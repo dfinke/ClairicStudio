@@ -9,6 +9,7 @@
     "rootDir": "src"
   },
   "include": [
-    "src/logic.ts"
+    "src/logic.ts",
+    "src/clipboard.ts"
   ]
 }

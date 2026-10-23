@@ -15,7 +15,7 @@ export function Extract(arg1:string,arg2:clairic.Schema):Promise<clairic.Result>
 
 export function ForgetConnection():Promise<main.Connection>;
 
-export function GenerateCode(arg1:string,arg2:string,arg3:clairic.Schema,arg4:boolean):Promise<clairic.CodeExport>;
+export function GenerateCode(arg1:string,arg2:string,arg3:clairic.Schema,arg4:boolean,arg5:string):Promise<clairic.CodeExport>;
 
 export function OpenDocument():Promise<main.Document>;
 
@@ -23,7 +23,7 @@ export function OpenSchema():Promise<main.SchemaFile>;
 
 export function Ready():Promise<void>;
 
-export function SaveCode(arg1:string,arg2:string,arg3:clairic.Schema,arg4:boolean):Promise<string>;
+export function SaveCode(arg1:string,arg2:string,arg3:clairic.Schema,arg4:boolean,arg5:string):Promise<string>;
 
 export function SaveSchema(arg1:clairic.Schema):Promise<string>;
 

@@ -264,11 +264,11 @@ func (a *App) CancelExtraction() {
 		a.cancel()
 	}
 }
-func (a *App) GenerateCode(language, state string, s clairic.Schema, embed bool) (clairic.CodeExport, error) {
-	return clairic.ExportProgram(language, state, s, embed)
+func (a *App) GenerateCode(language, state string, s clairic.Schema, embed bool, style string) (clairic.CodeExport, error) {
+	return clairic.ExportProgramWithStyle(language, state, s, embed, style)
 }
-func (a *App) SaveCode(language, state string, s clairic.Schema, embed bool) (string, error) {
-	e, err := a.GenerateCode(language, state, s, embed)
+func (a *App) SaveCode(language, state string, s clairic.Schema, embed bool, style string) (string, error) {
+	e, err := a.GenerateCode(language, state, s, embed, style)
 	if err != nil {
 		return "", err
 	}

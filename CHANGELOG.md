@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- The ready-to-run Windows x64 executable is included in the repository with a README download link.
+
+- Copy code and Copy JSON briefly confirm successful clipboard writes with ✓ Copied; content changes reset the confirmation.
+- PowerShell export now offers standalone HTTP and PSAIClairic module styles, with matching schemas, input modes, and request options. Standalone remains the default.
+
 ## 0.1.0 — 2026-10-23
 
 Initial desktop version of Clairic Studio.

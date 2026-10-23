@@ -26,8 +26,8 @@ export function ForgetConnection() {
   return window['go']['main']['App']['ForgetConnection']();
 }
 
-export function GenerateCode(arg1, arg2, arg3, arg4) {
-  return window['go']['main']['App']['GenerateCode'](arg1, arg2, arg3, arg4);
+export function GenerateCode(arg1, arg2, arg3, arg4, arg5) {
+  return window['go']['main']['App']['GenerateCode'](arg1, arg2, arg3, arg4, arg5);
 }
 
 export function OpenDocument() {
@@ -42,8 +42,8 @@ export function Ready() {
   return window['go']['main']['App']['Ready']();
 }
 
-export function SaveCode(arg1, arg2, arg3, arg4) {
-  return window['go']['main']['App']['SaveCode'](arg1, arg2, arg3, arg4);
+export function SaveCode(arg1, arg2, arg3, arg4, arg5) {
+  return window['go']['main']['App']['SaveCode'](arg1, arg2, arg3, arg4, arg5);
 }
 
 export function SaveSchema(arg1) {

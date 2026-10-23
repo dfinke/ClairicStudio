@@ -18,6 +18,19 @@ type CodeExport struct {
 }
 
 func ExportProgram(language, state string, s Schema, embed bool) (CodeExport, error) {
+	return ExportProgramWithStyle(language, state, s, embed, "standalone")
+}
+
+func ExportProgramWithStyle(language, state string, s Schema, embed bool, style string) (CodeExport, error) {
+	if style == "" {
+		style = "standalone"
+	}
+	if style != "standalone" && style != "module" {
+		return CodeExport{}, errors.New("Choose standalone or module export style")
+	}
+	if style == "module" && language != "PowerShell" {
+		return CodeExport{}, errors.New("The PSAIClairic module export is available for PowerShell only")
+	}
 	validationState := state
 	if !embed && strings.TrimSpace(state) == "" {
 		validationState = "Document supplied at runtime."
@@ -28,6 +41,9 @@ func ExportProgram(language, state string, s Schema, embed bool) (CodeExport, er
 	}
 	if !embed {
 		r.State = ""
+	}
+	if style == "module" {
+		return powerShellModuleProgram(r, s, embed), nil
 	}
 	payload, _ := json.Marshal(r)
 	encoded := base64.StdEncoding.EncodeToString(payload)
@@ -216,7 +232,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 		e.Code = strings.Replace(e.Code, "import base64, json, os, sys, urllib.request", "import json, os, sys, urllib.request", 1)
 		e.Code = strings.Replace(e.Code, `request = json.loads(base64.b64decode("`+encoded+`"))`, `request = json.loads(`+string(quoted)+`)`, 1)
 	case "PowerShell":
-		e.Code = strings.Replace(e.Code, `$request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('`+encoded+`')) | ConvertFrom-Json -AsHashtable`, "$request = '"+strings.ReplaceAll(string(pretty), "'", "''")+"' | ConvertFrom-Json -AsHashtable", 1)
+		e.Code = strings.Replace(e.Code, `$request = [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('`+encoded+`')) | ConvertFrom-Json -AsHashtable`, "$request = "+powerShellLiteral(string(pretty))+" | ConvertFrom-Json -AsHashtable", 1)
 	case "TypeScript":
 		e.Code = strings.Replace(e.Code, `const request = JSON.parse(Buffer.from('`+encoded+`', 'base64').toString('utf8'));`, `const request = JSON.parse(`+string(quoted)+`);`, 1)
 		e.Code = strings.ReplaceAll(e.Code, `/^\\uFEFF/`, `/^\uFEFF/`)

@@ -1,5 +1,6 @@
 # Generated desktop and frontend outputs
-/build/bin/
+/build/bin/*
+!/build/bin/ClairicStudio.exe
 /frontend/dist/
 /frontend/node_modules/
 /frontend/.test/
@@ -21,3 +22,6 @@
 workspace.json
 .DS_Store
 Thumbs.db
+
+# Local video scripts, recordings, and exports
+/local/launch-video/

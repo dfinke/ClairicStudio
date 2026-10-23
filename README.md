@@ -22,19 +22,19 @@ Clairic Studio is a desktop workbench for [Cloudflare's Clairic model](https://d
 - **Inspect the source.** Click a text result to highlight its verified source span. Computed values and predictions may have no direct span.
 - **Keep the full answer.** Explore confidence, nulls, ranges, forecasts, and other model metadata alongside the values.
 - **Make it your workspace.** Resize the document, field editor, and results panes. Switch between light and dark appearances. Pick up your schema where you left off.
-- **Leave with code.** Preview, copy, or save programs that call Cloudflare directly, independently of Studio and the PowerShell module.
+- **Leave with code.** Preview, copy, or save standalone programs that call Cloudflare directly, or PowerShell programs using PSAIClairic.
 
 ## Run Studio
 
-After building, open **`build/bin/ClairicStudio.exe`**. You can copy that one EXE to another folder or Windows x64 computer; its interface is embedded. Running Studio does not require Go, Node.js, or PowerShell. Windows needs Microsoft Edge WebView2, normally present on current Windows installations. The current executable is unsigned.
+**[Download ClairicStudio.exe for Windows x64](https://github.com/dfinke/ClairicStudio/raw/refs/heads/main/build/bin/ClairicStudio.exe)**, or find the ready-to-run EXE at **`build/bin/ClairicStudio.exe`** after cloning. You can copy that one EXE to another folder or Windows x64 computer; its interface is embedded. Running Studio does not require Go, Node.js, or PowerShell. Windows needs Microsoft Edge WebView2, normally present on current Windows installations. The current executable is unsigned.
 
-This repository contains source and build assets. Executables are generated locally and excluded from Git; no GitHub Release is currently provided.
+The repository includes the Windows executable alongside its source. Because this repository is private, downloading requires GitHub access. Temporary build outputs stay excluded from Git. No GitHub Release is currently provided; a release can carry a separately uploaded copy of the EXE as an asset.
 
 1. Connect with your **Cloudflare account ID** and an API token with **Workers AI Read** permission for that account. Studio also discovers `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_AUTH_TOKEN` from its launch environment.
 2. Choose **Load example**, paste text, or choose **Open text file**.
 3. Add fields and describe what each should contain. Choose **Extract now**, or edit with Auto-preview enabled.
 4. Inspect the values, confidence, and source spans. **Copy JSON** copies just the current extracted values.
-5. Choose **Export code**, select a language and document-input mode, then **Copy code** or **Save program**.
+5. Choose **Export code**, select a language and document-input mode, then **Copy code** or **Save program**. Successful copies briefly show **✓ Copied**.
 
 Schema editing and code export work without a connection. Extraction requires internet access. Model requests send your text and schema to Cloudflare and use your Workers AI allowance. **Test extraction** sends one small request.
 
@@ -64,15 +64,19 @@ These are model outputs: verify amounts, dates, calculations, and source matches
 
 ## Export once, run anywhere your language runs
 
-Exported programs use the selected schema, read credentials from the two environment variables above, and call the Cloudflare HTTP API directly. Full answers and metadata remain in the output. Conditional blocks use explicit braces and separate lines where the language supports them; Python uses indented blocks.
+Exported programs use the selected schema and read credentials from the two environment variables above. Standalone exports call the Cloudflare HTTP API directly; the optional PowerShell module style calls the same API through PSAIClairic. Full answers and metadata remain in the output. Conditional blocks use explicit braces and separate lines where the language supports them; Python uses indented blocks.
 
 | Language | Runtime needed for the exported program |
 | --- | --- |
-| PowerShell | PowerShell 7.2+; no additional modules |
+| PowerShell | PowerShell 7.2+; standalone by default, or PSAIClairic 0.2.0+ for module style |
 | Python | Python 3; standard library only |
 | TypeScript | Node.js 18+ and a TypeScript runner such as `tsx` |
 | Go | Go 1.22+; standard library only |
 | Rust | A Cargo project with `reqwest` 0.12 (`blocking`, `json`) and `serde_json` 1; setup instructions appear in the exported file |
+
+When PowerShell is selected, **Export style** offers **Standalone HTTP script** (the default) or **Use PSAIClairic module**. Module style builds ordered fields with `New-ClairicField` and runs `Invoke-Clairic`. It preserves the full result and includes a commented `ConvertFrom-ClairicAnswer` pipeline for projecting just the values. Install or import [PSAIClairic](https://github.com/dfinke/PSAIClairic) before running that style; Studio itself does not require the module.
+
+**Copy code** and **Copy JSON** show **✓ Copied** only after a successful clipboard write, reset after two seconds, and clear when the corresponding content changes.
 
 Choose the input mode explicitly:
 
