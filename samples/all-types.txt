@@ -1,0 +1,1 @@
+Invoice INV-4102 for Contoso Workshop, issued October 23, 2026. Total USD 1,280.00, net 30 days. Products: steel brackets, anchor bolts, mounting plates. Follow-up call at 14:30. Delivery scheduled October 28, 2026 at 09:00. Recent invoice totals: USD 1,100, USD 1,200, USD 1,280. Weekly order counts over the last six weeks: 12, 15, 14, 18, 20, 22.

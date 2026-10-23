@@ -1,0 +1,23 @@
+# Generated desktop and frontend outputs
+/build/bin/
+/frontend/dist/
+/frontend/node_modules/
+/frontend/.test/
+/frontend/package.json.md5
+*.syso
+
+# Local validation and scratch exports
+/.validation/
+/test.ps1
+/smoke-report.json
+*.log
+
+# Credentials and local editor/workspace files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+workspace.json
+.DS_Store
+Thumbs.db

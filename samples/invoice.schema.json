@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "fields": [
+    { "name": "invoice_number", "type": "text", "instructions": "Complete invoice number", "settings": {} },
+    { "name": "vendor", "type": "text", "instructions": "Full supplier name", "settings": {} },
+    { "name": "due_date", "type": "date", "instructions": "Issue date plus the net payment days", "settings": {} },
+    { "name": "total", "type": "number", "instructions": "Total amount due including shipping", "settings": { "unit": "USD", "decimals": "2" } },
+    { "name": "po_number", "type": "text", "instructions": "Purchase order number; null if absent", "settings": {} }
+  ]
+}

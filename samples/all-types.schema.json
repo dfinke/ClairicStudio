@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "reference_date": "2026-10-23",
+  "include_quantiles": true,
+  "fields": [
+    {
+      "type": "text",
+      "settings": {},
+      "instructions": "Customer company name",
+      "name": "customer"
+    },
+    {
+      "type": "number",
+      "settings": {
+        "decimals": 2,
+        "unit": "USD"
+      },
+      "instructions": "Invoice total",
+      "name": "amount"
+    },
+    {
+      "type": "date",
+      "settings": {},
+      "instructions": "Date the invoice was issued",
+      "name": "invoice_date"
+    },
+    {
+      "type": "time",
+      "settings": {},
+      "instructions": "Time of the follow-up call",
+      "name": "call_time"
+    },
+    {
+      "type": "datetime",
+      "settings": {},
+      "instructions": "Scheduled delivery date and time",
+      "name": "delivery"
+    },
+    {
+      "type": "duration",
+      "settings": {
+        "integer": true,
+        "unit": "days"
+      },
+      "instructions": "Payment terms expressed in days",
+      "name": "payment_terms"
+    },
+    {
+      "type": "list",
+      "settings": {
+        "items": "text"
+      },
+      "instructions": "Product names",
+      "name": "products"
+    },
+    {
+      "type": "estimate",
+      "settings": {
+        "step": 100,
+        "max": 10000,
+        "min": 0,
+        "unit": "USD"
+      },
+      "instructions": "Estimate next invoice amount from the recent invoice history",
+      "name": "estimated_total"
+    },
+    {
+      "type": "forecast",
+      "settings": {
+        "step": 1,
+        "horizon": 4,
+        "interval": "week",
+        "max": 100,
+        "min": 0
+      },
+      "instructions": "Forecast order counts for the next four weeks using the order history",
+      "name": "weekly_orders"
+    }
+  ]
+}

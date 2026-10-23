@@ -1,0 +1,9 @@
+Invoice INV-2291 from Northwind Supply
+Issued: 2026-09-02
+Payment terms: net 30
+
+Four pallets at USD 250.00 each
+Shipping: USD 80.00
+Purchase order: PO-1042
+
+Contact: Dana Ruiz

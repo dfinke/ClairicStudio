@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "outDir": ".test",
+    "strict": true,
+    "skipLibCheck": true,
+    "rootDir": "src"
+  },
+  "include": [
+    "src/logic.ts"
+  ]
+}
