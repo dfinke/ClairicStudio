@@ -26,9 +26,9 @@ Clairic Studio is a desktop workbench for [Cloudflare's Clairic model](https://d
 
 ## Run Studio
 
-**[Download ClairicStudio.exe for Windows x64](https://github.com/dfinke/ClairicStudio/raw/refs/heads/main/build/bin/ClairicStudio.exe)**, or find the ready-to-run EXE at **`build/bin/ClairicStudio.exe`** after cloning. You can copy that one EXE to another folder or Windows x64 computer; its interface is embedded. Running Studio does not require Go, Node.js, or PowerShell. Windows needs Microsoft Edge WebView2, normally present on current Windows installations. The current executable is unsigned.
+**[Download ClairicStudio.exe for Windows x64](https://github.com/dfinke/ClairicStudio/releases/latest/download/ClairicStudio.exe)**, or find the ready-to-run EXE at **`build/bin/ClairicStudio.exe`** after cloning. You can copy that one EXE to another folder or Windows x64 computer; its interface is embedded. Running Studio does not require Go, Node.js, or PowerShell. Windows needs Microsoft Edge WebView2, normally present on current Windows installations. The current executable is unsigned.
 
-The repository includes the Windows executable alongside its source. Because this repository is private, downloading requires GitHub access. Temporary build outputs stay excluded from Git. No GitHub Release is currently provided; a release can carry a separately uploaded copy of the EXE as an asset.
+Get the Windows executable and its SHA-256 checksum from [GitHub Releases](https://github.com/dfinke/ClairicStudio/releases/latest). The repository also includes the executable alongside its source. Temporary build outputs stay excluded from Git.
 
 1. Connect with your **Cloudflare account ID** and an API token with **Workers AI Read** permission for that account. Studio checks `CLOUDFLARE_ACCOUNT_ID` and `CLOUDFLARE_AUTH_TOKEN` (or the `CLOUDFLARE_API_TOKEN` alias) in its launch environment, Windows user/system environment settings, and its saved credential-store connection. The setup screen appears only when no complete connection is found.
 2. Choose **Load example**, paste text, or choose **Open text file**.
@@ -142,7 +142,7 @@ go install github.com/wailsapp/wails/v2/cmd/wails@v2.10.2
 ./build/bin/ClairicStudio.exe
 ```
 
-The repository is currently private, so cloning requires GitHub access. The build script installs the locked frontend dependencies, runs tests and Go analysis, then builds the EXE. It finds Wails on PATH or in Go's bin directory. `wails dev` starts live development when Wails is on PATH.
+The build script installs the locked frontend dependencies, runs tests and Go analysis, then builds the EXE. It finds Wails on PATH or in Go's bin directory. `wails dev` starts live development when Wails is on PATH.
 
 To run the checks separately:
 
